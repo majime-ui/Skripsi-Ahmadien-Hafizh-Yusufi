@@ -1,0 +1,4 @@
+repository "Skripsi-Ahmadien-Hafizh-Yusufi@majime787898@cloud"
+  path "/"
+    br "/main"
+    co "/main"
