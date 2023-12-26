@@ -25,7 +25,7 @@ public class PlayerContext : MonoBehaviour
     // SerializeField will allow Unity to access the variable from editor even if it private
     [SerializeField]
     private PlayerData playerData; // Referencing PlayerData
-    #endregion
+    #endregion+
 
     #region Components
     public Animator Anim { get; private set; } // getter setter for accessing Animator
