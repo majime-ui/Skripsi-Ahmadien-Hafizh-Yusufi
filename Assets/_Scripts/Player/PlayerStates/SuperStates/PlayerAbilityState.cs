@@ -1,29 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
+using Majime.CoreSystem;
 using UnityEngine;
 
 public class PlayerAbilityState : PlayerState
 {
-    protected bool isAbilityDone; // bool to detect Current ability is done or not
+    protected bool isAbilityDone;
+
+    protected Movement Movement { get => movement ?? core.GetCoreComponent(ref movement); }
+    private CollisionSenses CollisionSenses { get => collisionSenses ?? core.GetCoreComponent(ref collisionSenses); }
+
+    private Movement movement;
+    private CollisionSenses collisionSenses;
 
     private bool isGrounded;
 
-    public PlayerAbilityState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerAbilityState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
     }
 
-    public override void DoCheck()
+    public override void DoChecks()
     {
-        base.DoCheck();
+        base.DoChecks();
 
-        isGrounded = player.CheckIfGrounded();
+        if (CollisionSenses)
+        {
+            isGrounded = CollisionSenses.Ground;
+        }
     }
 
     public override void Enter()
     {
         base.Enter();
 
-        isAbilityDone = false; // ability just entering or playing
+        isAbilityDone = false;
     }
 
     public override void Exit()
@@ -37,13 +47,13 @@ public class PlayerAbilityState : PlayerState
 
         if (isAbilityDone)
         {
-            if (isGrounded && player.CurrentVelocity.y < 0.01f) // condition for changing to idle state
+            if (isGrounded && Movement?.CurrentVelocity.y < 0.01f)
             {
-                playerFSM.ChangeState(player.IdleState);
+                stateMachine.ChangeState(player.IdleState);
             }
             else
             {
-                playerFSM.ChangeState(player.InAirState);
+                stateMachine.ChangeState(player.InAirState);
             }
         }
     }

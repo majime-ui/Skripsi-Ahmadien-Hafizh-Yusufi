@@ -4,28 +4,48 @@ using UnityEngine;
 
 public class PlayerMoveState : PlayerGroundedState
 {
-    public PlayerMoveState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerMoveState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
+    }
+
+    public override void DoChecks()
+    {
+        base.DoChecks();
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
 
-        player.CheckIfShouldFlip(xInput);
+        Movement?.CheckIfShouldFlip(xInput);
 
-        player.SetVelocityX(playerData.movementVelocity * xInput); // moving player horizontaly
+        Movement?.SetVelocityX(playerData.movementVelocity * xInput);
 
-        if(!isExitingState)
+        if (!isExitingState)
         {
-            if(xInput == 0) // condition to change state to IdleState
+            if (xInput == 0)
             {
-                playerFSM.ChangeState(player.IdleState);
+                stateMachine.ChangeState(player.IdleState);
             }
-            else if(yInput == -1)
+            else if (yInput == -1)
             {
-                playerFSM.ChangeState(player.CrouchMoveState);
+                stateMachine.ChangeState(player.CrouchMoveState);
             }
         }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
     }
 }

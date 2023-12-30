@@ -1,69 +1,106 @@
 using System.Collections;
 using System.Collections.Generic;
+using Majime.CoreSystem;
 using UnityEngine;
 
 public class PlayerGroundedState : PlayerState
 {
-    protected int xInput; // now every PlayerGroundedState inheritance will have this variable for input
+    protected int xInput;
     protected int yInput;
 
     protected bool isTouchingCeiling;
 
-    private bool JumpInput;
+    protected Movement Movement
+    {
+        get => movement ?? core.GetCoreComponent(ref movement);
+    }
+
+    private Movement movement;
+
+    private CollisionSenses CollisionSenses
+    {
+        get => collisionSenses ?? core.GetCoreComponent(ref collisionSenses);
+    }
+
+    private CollisionSenses collisionSenses;
+
+    private bool jumpInput;
     private bool grabInput;
     private bool isGrounded;
     private bool isTouchingWall;
     private bool isTouchingLedge;
     private bool dashInput;
 
-    public PlayerGroundedState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerGroundedState(Player player, PlayerStateMachine stateMachine, PlayerData playerData,
+        string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
     }
 
-    public override void DoCheck()
+    public override void DoChecks()
     {
-        base.DoCheck();
+        base.DoChecks();
 
-        isGrounded = player.CheckIfGrounded(); // true if grounded
-        isTouchingWall = player.CheckIfTouchingWall(); // true if touching wall
-        isTouchingLedge = player.CheckIfTouchingLedge();
-        isTouchingCeiling = player.CheckForCeiling();
+        if (CollisionSenses)
+        {
+            isGrounded = CollisionSenses.Ground;
+            isTouchingWall = CollisionSenses.WallFront;
+            isTouchingLedge = CollisionSenses.LedgeHorizontal;
+            isTouchingCeiling = CollisionSenses.Ceiling;
+        }
     }
 
     public override void Enter()
     {
         base.Enter();
 
-        player.JumpState.ResetAmountOfJumpsLeft(); // reseting jump counter whenever player touch ground
+        player.JumpState.ResetAmountOfJumpsLeft();
         player.DashState.ResetCanDash();
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
 
-        xInput = player.InputHandler.NormInputX; // now everytime user inputting movement x will be the value of this variable
+        xInput = player.InputHandler.NormInputX;
         yInput = player.InputHandler.NormInputY;
-        JumpInput = player.InputHandler.JumpInput; // now when player in the ground, we can call JumpInput
+        jumpInput = player.InputHandler.JumpInput;
         grabInput = player.InputHandler.GrabInput;
         dashInput = player.InputHandler.DashInput;
 
-        if (JumpInput && player.JumpState.CanJump()) // condition of changing state to JumpState
+        if (player.InputHandler.AttackInputs[(int)CombatInputs.primary] && !isTouchingCeiling && player.PrimaryAttackState.CanTransitionToAttackState())
         {
-            playerFSM.ChangeState(player.JumpState);
+            stateMachine.ChangeState(player.PrimaryAttackState);
         }
-        else if (!isGrounded) // condition for chnage state to InAirState
+        else if (player.InputHandler.AttackInputs[(int)CombatInputs.secondary] && !isTouchingCeiling && player.SecondaryAttackState.CanTransitionToAttackState())
+        {
+            stateMachine.ChangeState(player.SecondaryAttackState);
+        }
+        else if (jumpInput && player.JumpState.CanJump() && !isTouchingCeiling)
+        {
+            stateMachine.ChangeState(player.JumpState);
+        }
+        else if (!isGrounded)
         {
             player.InAirState.StartCoyoteTime();
-            playerFSM.ChangeState(player.InAirState);
+            stateMachine.ChangeState(player.InAirState);
         }
-        else if(isTouchingWall && grabInput && isTouchingLedge)
+        else if (isTouchingWall && grabInput && isTouchingLedge)
         {
-            playerFSM.ChangeState(player.WallGrabState);
+            stateMachine.ChangeState(player.WallGrabState);
         }
-        else if(dashInput && player.DashState.CheckIfCanDash() && !isTouchingCeiling)
+        else if (dashInput && player.DashState.CheckIfCanDash() && !isTouchingCeiling)
         {
-            playerFSM.ChangeState(player.DashState);
+            stateMachine.ChangeState(player.DashState);
         }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
     }
 }

@@ -1,67 +1,64 @@
 using System.Collections;
 using System.Collections.Generic;
+using Majime.CoreSystem;
+using TMPro;
 using UnityEngine;
 
-/*PlayerState is base class of all player states, so any state that created will inherit from PlayerState*/
 public class PlayerState
 {
-    // protected means this variable can be access from their children only
-    protected PlayerContext player; // Reference of PlayerContext
-    protected PlayerFSM playerFSM; // Reference of PlayerFSM
-    protected PlayerData playerData; // Reference of PlayerData
+    protected Core core;
 
-    protected bool isAnimationFinished; // bool to check animation is finished
-    protected bool isExitingState; // checking if any state exit
+    protected Player player;
+    protected PlayerStateMachine stateMachine;
+    protected PlayerData playerData;
 
-    protected float startTime; // Get set everytime enter state
+    protected bool isAnimationFinished;
+    protected bool isExitingState;
 
-    private string animBoolName; // Telling animator what state that playing
+    protected float startTime;
 
-    // Constructor
-    public PlayerState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName)
+    private string animBoolName;
+
+    public PlayerState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName)
     {
-        // this refers to variable name in class
         this.player = player;
-        this.playerFSM = playerFSM;
+        this.stateMachine = stateMachine;
         this.playerData = playerData;
         this.animBoolName = animBoolName;
+        core = player.Core;
     }
 
-    // virtual means this function can get overwritten by class that inherit from this class
-    // Enter() get called when enter specific state
     public virtual void Enter()
-    { 
-        DoCheck();
-        player.Anim.SetBool(animBoolName, true); // transition in of animation
-        startTime = Time.time; // save time whenever entering state
-        Debug.Log(animBoolName);
-        isAnimationFinished = false; //this variable default is false
-        isExitingState = false; // this variable default is false
+    {
+        DoChecks();
+        player.Anim.SetBool(animBoolName, true);
+        startTime = Time.time;
+        //Debug.Log(animBoolName);
+        isAnimationFinished = false;
+        isExitingState = false;
     }
 
-    // Exit() get called when leaving the state
     public virtual void Exit()
     {
-        player.Anim.SetBool(animBoolName, false); // transition out of animation
-        isExitingState = true; // when a state change this become true
+        player.Anim.SetBool(animBoolName, false);
+        isExitingState = true;
     }
 
-    // Update() so its called every frame
-    public virtual void LogicUpdate() { }
+    public virtual void LogicUpdate()
+    {
 
-    // FixedUpdate() so its called every second
+    }
+
     public virtual void PhysicsUpdate()
     {
-        DoCheck();
+        DoChecks();
     }
 
-    // Get called form PhysicsUpdate() and Enter()
-    public virtual void DoCheck() { }
+    public virtual void DoChecks() { }
 
-    // Get called when Animation playing
     public virtual void AnimationTrigger() { }
 
-    // Get called after animation done playing
     public virtual void AnimationFinishTrigger() => isAnimationFinished = true;
+
 
 }

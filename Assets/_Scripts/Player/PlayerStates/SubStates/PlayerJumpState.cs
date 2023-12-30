@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public class PlayerJumpState : PlayerAbilityState
 {
-    private int amountOfJumpsLeft; // store how many jumps left
+    private int amountOfJumpsLeft;
 
-    public PlayerJumpState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerJumpState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
         amountOfJumpsLeft = playerData.amountOfJumps;
     }
@@ -14,23 +15,26 @@ public class PlayerJumpState : PlayerAbilityState
     public override void Enter()
     {
         base.Enter();
-
-        player.SetVelocityY(playerData.jumpVelocity); // make player jumping bcz y value change
         player.InputHandler.UseJumpInput();
-        isAbilityDone = true; // ability is done
+        Movement?.SetVelocityY(playerData.jumpVelocity);
+        isAbilityDone = true;
         amountOfJumpsLeft--;
         player.InAirState.SetIsJumping();
     }
 
-    public bool CanJump() // allowing player jump
+    public bool CanJump()
     {
-        if (amountOfJumpsLeft > 0) { return true; }
-        else { return false; }
+        if (amountOfJumpsLeft > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    
-    // resetting jump counter
+
     public void ResetAmountOfJumpsLeft() => amountOfJumpsLeft = playerData.amountOfJumps;
 
-    // decrease jump counter
     public void DecreaseAmountOfJumpsLeft() => amountOfJumpsLeft--;
 }

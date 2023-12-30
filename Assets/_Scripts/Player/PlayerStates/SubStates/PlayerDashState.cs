@@ -14,7 +14,7 @@ public class PlayerDashState : PlayerAbilityState
     private Vector2 dashDirectionInput;
     private Vector2 lastAIPos;
 
-    public PlayerDashState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerDashState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
     }
     public override void Enter()
@@ -25,21 +25,22 @@ public class PlayerDashState : PlayerAbilityState
         player.InputHandler.UseDashInput();
 
         isHolding = true;
-        dashDirection = Vector2.right * player.FacingDirection;
+        dashDirection = Vector2.right * Movement.FacingDirection;
 
         Time.timeScale = playerData.holdTimeScale;
         startTime = Time.unscaledTime;
 
         player.DashDirectionIndicator.gameObject.SetActive(true);
+
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        if(player.CurrentVelocity.y > 0)
+        if (Movement?.CurrentVelocity.y > 0)
         {
-            player.SetVelocityY(player.CurrentVelocity.y * playerData.dashEndYMultiplier);
+            Movement?.SetVelocityY(Movement.CurrentVelocity.y * playerData.dashEndYMultiplier);
         }
     }
 
@@ -47,12 +48,14 @@ public class PlayerDashState : PlayerAbilityState
     {
         base.LogicUpdate();
 
-        if(!isExitingState)
+        if (!isExitingState)
         {
-            player.Anim.SetFloat("yVelocity", player.CurrentVelocity.y);
-            player.Anim.SetFloat("xVelocity", Mathf.Abs(player.CurrentVelocity.x));
 
-            if(isHolding)
+            player.Anim.SetFloat("yVelocity", Movement.CurrentVelocity.y);
+            player.Anim.SetFloat("xVelocity", Mathf.Abs(Movement.CurrentVelocity.x));
+
+
+            if (isHolding)
             {
                 dashDirectionInput = player.InputHandler.DashDirectionInput;
                 dashInputStop = player.InputHandler.DashInputStop;
@@ -71,19 +74,19 @@ public class PlayerDashState : PlayerAbilityState
                     isHolding = false;
                     Time.timeScale = 1f;
                     startTime = Time.time;
-                    player.CheckIfShouldFlip(Mathf.RoundToInt(dashDirection.x));
+                    Movement?.CheckIfShouldFlip(Mathf.RoundToInt(dashDirection.x));
                     player.RB.drag = playerData.drag;
-                    player.SetVelocity(playerData.dashVelocity, dashDirection);
+                    Movement?.SetVelocity(playerData.dashVelocity, dashDirection);
                     player.DashDirectionIndicator.gameObject.SetActive(false);
                     PlaceAfterImage();
                 }
             }
             else
             {
-                player.SetVelocity(playerData.dashVelocity, dashDirection);
-                checkIfShouldPlaceAfterImage();
+                Movement?.SetVelocity(playerData.dashVelocity, dashDirection);
+                CheckIfShouldPlaceAfterImage();
 
-                if(Time.time >= startTime + playerData.dashTime)
+                if (Time.time >= startTime + playerData.dashTime)
                 {
                     player.RB.drag = 0f;
                     isAbilityDone = true;
@@ -93,9 +96,9 @@ public class PlayerDashState : PlayerAbilityState
         }
     }
 
-    private void checkIfShouldPlaceAfterImage()
+    private void CheckIfShouldPlaceAfterImage()
     {
-        if(Vector2.Distance(player.transform.position, lastAIPos) >= playerData.distBetweenAfterImage)
+        if (Vector2.Distance(player.transform.position, lastAIPos) >= playerData.distBetweenAfterImages)
         {
             PlaceAfterImage();
         }
@@ -107,7 +110,6 @@ public class PlayerDashState : PlayerAbilityState
         lastAIPos = player.transform.position;
     }
 
-    // this function return true if we can dash and dash no longer cool down
     public bool CheckIfCanDash()
     {
         return CanDash && Time.time >= lastDashTime + playerData.dashCooldown;

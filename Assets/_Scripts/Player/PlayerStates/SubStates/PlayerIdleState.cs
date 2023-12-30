@@ -4,28 +4,46 @@ using UnityEngine;
 
 public class PlayerIdleState : PlayerGroundedState
 {
-
-    // Constructor
-    public PlayerIdleState(PlayerContext player, PlayerFSM playerFSM, PlayerData playerData, string animBoolName) : base(player, playerFSM, playerData, animBoolName)
+    public PlayerIdleState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
+    }
+
+    public override void DoChecks()
+    {
+        base.DoChecks();
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        Movement?.SetVelocityX(0f);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
 
-        player.SetVelocityX(0f); // it stop the movement of player
-
         if (!isExitingState)
         {
-            if(xInput != 0) // condition for changing to MoveState
+            if (xInput != 0)
             {
-                playerFSM.ChangeState(player.MoveState);
+                stateMachine.ChangeState(player.MoveState);
             }
-            else if(yInput == -1)
+            else if (yInput == -1)
             {
-                playerFSM.ChangeState(player.CrouchIdleState);
+                stateMachine.ChangeState(player.CrouchIdleState);
             }
         }
+
+    }
+
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
     }
 }
