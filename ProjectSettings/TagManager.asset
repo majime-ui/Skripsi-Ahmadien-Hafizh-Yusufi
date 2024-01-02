@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Enemy
+  - ParticleContainer
   layers:
   - Default
   - TransparentFX
@@ -15,9 +17,9 @@ TagManager:
   - Damageable
   - Dead
   - Player
-  - 
-  - 
-  - 
+  - Weapon
+  - Interactable
+  - WorldItem
   - 
   - 
   - 
@@ -55,6 +57,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 3286813261
+    locked: 0
+  - name: ActiveProjectile
+    uniqueID: 1099981221
     locked: 0
   - name: Foreground Decoration
     uniqueID: 2024453525
